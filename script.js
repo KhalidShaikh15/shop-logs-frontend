@@ -1,24 +1,21 @@
-const API_URL = "https://shop-logs-backend-1.onrender.com/"; // your Render backend
+const API_URL = "https://shop-logs-backend-1.onrender.com"; // your Render backend
 
 // Elements
-const logForm = document.getElementById("log-form");
-const logsTableBody = document.getElementById("logs-table-body");
-const generateBtn = document.getElementById("generate-whatsapp");
-const resetBtn = document.getElementById("reset-logs");
+const logForm = document.getElementById("logForm");
+const logsTableBody = document.querySelector("#logTable tbody");
+const generateBtn = document.getElementById("generate");
+const resetBtn = document.getElementById("reset");
 
-// Store logs locally in memory for WhatsApp generation
+// Store logs locally
 let logs = [];
 
-// Format date to DD/MM/YYYY
+// Format date
 function formatDate(date) {
   const d = new Date(date);
-  const day = String(d.getDate()).padStart(2, "0");
-  const month = String(d.getMonth() + 1).padStart(2, "0");
-  const year = d.getFullYear();
-  return `${day}/${month}/${year}`;
+  return d.toLocaleDateString("en-GB"); // DD/MM/YYYY
 }
 
-// Fetch logs from backend
+// Fetch logs
 async function fetchLogs() {
   const res = await fetch(`${API_URL}/logs`);
   logs = await res.json();
@@ -30,40 +27,32 @@ function renderLogs() {
   logsTableBody.innerHTML = "";
   logs.forEach((log) => {
     const row = document.createElement("tr");
-
     row.innerHTML = `
       <td>${formatDate(log.date)}</td>
-      <td>${log.station}</td>
-      <td>${log.startTime || "-"}</td>
-      <td>${log.endTime || "-"}</td>
+      <td>${log.system}</td>
+      <td>${log.start || "-"} - ${log.end || "-"}</td>
       <td>${log.controllers || "-"}</td>
-      <td>${log.duration || "-"}</td>
       <td>${log.amount || "-"}</td>
       <td>${log.cash || 0}</td>
       <td>${log.online || 0}</td>
-      <td>
-        <button onclick="editLog('${log._id}')">✏️ Edit</button>
-      </td>
     `;
     logsTableBody.appendChild(row);
   });
 }
 
-// Add log entry
+// Add log
 logForm.addEventListener("submit", async (e) => {
   e.preventDefault();
 
-  const formData = new FormData(logForm);
   const log = {
     date: new Date().toISOString(),
-    station: formData.get("station"),
-    startTime: formData.get("startTime"),
-    endTime: formData.get("endTime"),
-    controllers: formData.get("controllers"),
-    duration: formData.get("duration"),
-    amount: formData.get("amount"),
-    cash: formData.get("cash"),
-    online: formData.get("online"),
+    system: document.getElementById("system").value,
+    start: document.getElementById("start").value,
+    end: document.getElementById("end").value,
+    controllers: document.getElementById("controllers").value,
+    amount: document.getElementById("amount").value,
+    cash: document.getElementById("cash").value,
+    online: document.getElementById("online").value,
   };
 
   await fetch(`${API_URL}/add-log`, {
@@ -75,25 +64,6 @@ logForm.addEventListener("submit", async (e) => {
   logForm.reset();
   fetchLogs();
 });
-
-// Edit log
-async function editLog(id) {
-  const log = logs.find((l) => l._id === id);
-  if (!log) return;
-
-  const newAmount = prompt("Enter new amount:", log.amount);
-  if (newAmount !== null) {
-    log.amount = newAmount;
-
-    await fetch(`${API_URL}/edit-log/${id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(log),
-    });
-
-    fetchLogs();
-  }
-}
 
 // Reset logs (Admin only)
 resetBtn.addEventListener("click", async () => {
@@ -122,14 +92,14 @@ generateBtn.addEventListener("click", () => {
     return;
   }
 
-  let message = `${formatDate(new Date())}\n\n`;
+  let message = `Gaming Parlour Logs - ${formatDate(new Date())}\n\n`;
   logs.forEach((log) => {
-    message += `${log.station} ${log.startTime || ""}-${log.endTime || ""} - ${log.controllers} controllers - ${log.duration} - ${log.amount} (${log.online} online, ${log.cash} cash)\n`;
+    message += `${log.system} ${log.start}-${log.end} | ${log.controllers} controllers | ₹${log.amount} (Cash: ₹${log.cash}, Online: ₹${log.online})\n`;
   });
 
   const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
   window.open(whatsappUrl, "_blank");
 });
 
-// Load logs on start
+// Load logs
 fetchLogs();
