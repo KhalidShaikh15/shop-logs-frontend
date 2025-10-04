@@ -1,45 +1,41 @@
-const API_URL = "https://shop-logs-backend-1.onrender.com/api"; // Your Render backend
+const API_URL = "https://shop-logs-backend-1.onrender.com/api"; // Your backend URL
 
-// Helper: Convert 24h to 12h AM/PM
+// Convert 24h to 12h AM/PM
 function formatTime12h(timeStr) {
   if (!timeStr) return "";
   const [hour, minute] = timeStr.split(":").map(Number);
   const ampm = hour >= 12 ? "PM" : "AM";
   const hour12 = hour % 12 || 12;
-  return `${hour12}:${minute.toString().padStart(2, "0")} ${ampm}`;
+  return `${hour12}:${minute.toString().padStart(2,"0")} ${ampm}`;
 }
 
-// Display logs in table
-function displayLogs(data) {
-  const logsList = document.getElementById("logs");
-  logsList.innerHTML = "";
-  if (!Array.isArray(data)) return;
-
-  data.forEach(log => {
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>${log.device}</td>
-      <td>${formatTime12h(log.startTime)}</td>
-      <td>${formatTime12h(log.endTime)}</td>
-      <td>${log.controllers}</td>
-      <td>${log.totalPayment}</td>
-      <td>${log.cash || ""}</td>
-      <td>${log.online || ""}</td>
-      <td>
-        <button class="action-btn edit-btn" onclick='editLog("${log._id}")'>Edit</button>
-        <button class="action-btn delete-btn" onclick='deleteLog("${log._id}")'>Delete</button>
-      </td>
-    `;
-    logsList.appendChild(tr);
-  });
-}
-
-// Fetch logs
-async function fetchLogs() {
+// Fetch logs (optionally by date)
+async function fetchLogs(date=null) {
   try {
-    const res = await fetch(`${API_URL}/logs`);
+    const url = date ? `${API_URL}/logs?date=${date}` : `${API_URL}/logs`;
+    const res = await fetch(url);
     const data = await res.json();
-    displayLogs(data);
+    const logsList = document.getElementById("logs");
+    logsList.innerHTML = "";
+    if (!Array.isArray(data)) return;
+
+    data.forEach(log => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${log.device}</td>
+        <td>${formatTime12h(log.startTime)}</td>
+        <td>${formatTime12h(log.endTime)}</td>
+        <td>${log.controllers}</td>
+        <td>${log.totalPayment}</td>
+        <td>${log.cash || ""}</td>
+        <td>${log.online || ""}</td>
+        <td>
+          <button class="action-btn edit-btn" onclick='editLog("${log._id}")'>Edit</button>
+          <button class="action-btn delete-btn" onclick='deleteLog("${log._id}")'>Delete</button>
+        </td>
+      `;
+      logsList.appendChild(tr);
+    });
   } catch (err) {
     console.error("Failed to fetch logs:", err);
   }
@@ -126,43 +122,36 @@ async function editLog(id) {
   }
 }
 
-// Reset logs (archive first, admin PIN)
+// Reset logs with PIN and archive
 async function resetLogs() {
   const pin = prompt("Enter admin PIN to reset logs:");
   if (pin !== "1526") { alert("Incorrect PIN!"); return; }
   try {
-    await fetch(`${API_URL}/logs/reset`, {
+    const res = await fetch(`${API_URL}/logs/reset`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ pin })
     });
-    fetchLogs();
-    alert("Logs reset and archived successfully!");
-  } catch (err) {
-    console.error("Failed to reset logs:", err);
-  }
-}
-
-// View archived logs by date
-async function viewArchivedLogs() {
-  const date = prompt("Enter date to view logs (YYYY-MM-DD):");
-  if (!date) return;
-  try {
-    const res = await fetch(`${API_URL}/archived-logs/${date}`);
     const data = await res.json();
-    displayLogs(data);
+    if (res.ok) {
+      alert(data.message || "Logs reset and archived successfully!");
+      fetchLogs();
+    } else {
+      alert(data.error || "Failed to reset logs");
+    }
   } catch (err) {
-    console.error("Failed to fetch archived logs:", err);
+    console.error("Reset failed:", err);
   }
 }
 
-// Generate WhatsApp draft
+// Generate WhatsApp message
 function generateWhatsAppMessage() {
   const rows = document.querySelectorAll("#logs tr");
   if (rows.length === 0) { alert("No logs to send"); return; }
 
   const today = new Date();
-  const dateStr = today.toLocaleDateString("en-GB", { day: "numeric", month: "long" });
+  const dateStr = today.toLocaleDateString("en-GB", { day:"numeric", month:"long" });
+
   let msg = `${dateStr}\n`;
 
   rows.forEach(row => {
@@ -182,5 +171,17 @@ function generateWhatsAppMessage() {
   window.open(whatsappUrl, "_blank");
 }
 
-// Initial fetch
+// Fetch logs initially
 fetchLogs();
+
+function fetchLogsByDate() {
+  const dateInput = document.getElementById("logDate").value;
+  if (!dateInput) {
+    alert("Please select a date");
+    return;
+  }
+  fetchLogs(dateInput); // Calls existing fetchLogs with date parameter
+}
+
+// Filter by date (if you want to add a date picker on frontend)
+// Example: fetchLogs("2025-10-04"); 
