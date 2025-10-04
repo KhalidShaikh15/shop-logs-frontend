@@ -1,62 +1,53 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Gaming Parlour Logs</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <title>Gaming Logs</title>
 </head>
 <body>
-  <h1>🎮 Gaming Parlour Log</h1>
+  <h1>🎮 Gaming Logs</h1>
 
   <form id="logForm">
-    <label>System:</label>
-    <select id="system">
-      <option value="PS1">PS1</option>
-      <option value="PS2">PS2</option>
-      <option value="PS3">PS3</option>
-      <option value="PC">PC</option>
-    </select><br>
-
-    <label>Start Time:</label>
-    <input type="time" id="start"><br>
-
-    <label>End Time:</label>
-    <input type="time" id="end"><br>
-
-    <label>Controllers Used:</label>
-    <input type="number" id="controllers" min="1"><br>
-
-    <label>Total Amount:</label>
-    <input type="number" id="amount"><br>
-
-    <label>Cash:</label>
-    <input type="number" id="cash"><br>
-
-    <label>Online:</label>
-    <input type="number" id="online"><br>
-
-    <button type="submit">Add Entry</button>
+    <input type="text" id="player" placeholder="Player Name" required />
+    <input type="number" id="score" placeholder="Score" required />
+    <button type="submit">Add Log</button>
   </form>
 
-  <h2>📋 Logs</h2>
-  <table id="logTable" border="1">
-    <thead>
-      <tr>
-        <th>Date</th>
-        <th>System</th>
-        <th>Time</th>
-        <th>Controllers</th>
-        <th>Total</th>
-        <th>Cash</th>
-        <th>Online</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+  <h2>Logs</h2>
+  <ul id="logs"></ul>
 
-  <button id="generate">📩 Generate WhatsApp Message</button>
-  <button id="reset">🗑 Reset Logs (Admin Only)</button>
+  <script>
+    const API_URL = "https://shop-logs-backend-1.onrender.com/api/logs"; // update with your Render backend URL
 
-  <script src="script.js"></script>
+    async function fetchLogs() {
+      const res = await fetch(API_URL);
+      const data = await res.json();
+      const logsList = document.getElementById("logs");
+      logsList.innerHTML = "";
+      data.forEach(log => {
+        const li = document.createElement("li");
+        li.textContent = `${log.player} scored ${log.score} (at ${new Date(log.createdAt).toLocaleString()})`;
+        logsList.appendChild(li);
+      });
+    }
+
+    document.getElementById("logForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const player = document.getElementById("player").value;
+      const score = document.getElementById("score").value;
+
+      await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ player, score })
+      });
+
+      document.getElementById("player").value = "";
+      document.getElementById("score").value = "";
+      fetchLogs();
+    });
+
+    fetchLogs();
+  </script>
 </body>
 </html>
