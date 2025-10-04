@@ -1,119 +1,165 @@
+/* General body */
 body {
-  font-family: Arial, sans-serif;
-  margin: 20px;
-  background-color: #f5f5f5;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: #f4f7f9;
+  color: #333;
+  margin: 0;
+  padding: 20px;
 }
 
+/* Heading */
 h1 {
   text-align: center;
-  color: #333;
-}
-
-form {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 10px;
+  color: #1f2937;
   margin-bottom: 20px;
+}
+
+/* Form styling */
+form#logForm {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+  max-width: 800px;
+  margin: 0 auto 20px;
   background: #fff;
-  padding: 15px;
-  border-radius: 8px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
-form label {
-  font-weight: bold;
-  font-size: 0.9rem;
+form#logForm label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 5px;
 }
 
-form input, form select, form button {
-  padding: 8px;
-  font-size: 0.9rem;
-  border-radius: 5px;
+form#logForm input,
+form#logForm select,
+form#logForm button {
+  padding: 10px;
+  font-size: 1rem;
+  border-radius: 6px;
   border: 1px solid #ccc;
-  width: 100%;
-  box-sizing: border-box;
 }
 
-form button {
+form#logForm button {
   grid-column: span 2;
-  background-color: #28a745;
-  color: white;
+  background: #4f46e5;
+  color: #fff;
   border: none;
   cursor: pointer;
-  font-weight: bold;
   transition: 0.3s;
 }
 
-form button:hover {
-  background-color: #218838;
+form#logForm button:hover {
+  background: #4338ca;
 }
 
+/* Action buttons above table */
 .action-buttons {
-  margin-bottom: 15px;
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-bottom: 20px;
 }
 
 .action-buttons button {
-  padding: 8px 15px;
-  margin-right: 10px;
+  padding: 10px 20px;
+  border-radius: 6px;
   border: none;
-  border-radius: 5px;
   cursor: pointer;
-  color: white;
-  font-weight: bold;
+  font-weight: 600;
+  transition: 0.3s;
 }
 
-.reset-btn { background-color: #dc3545; }
-.whatsapp-btn { background-color: #25d366; }
+.reset-btn {
+  background: #ef4444;
+  color: #fff;
+}
 
+.reset-btn:hover {
+  background: #dc2626;
+}
+
+.whatsapp-btn {
+  background: #22c55e;
+  color: #fff;
+}
+
+.whatsapp-btn:hover {
+  background: #16a34a;
+}
+
+/* Table styling */
 table {
   width: 100%;
   border-collapse: collapse;
+  max-width: 900px;
+  margin: 0 auto;
   background: #fff;
-  border-radius: 8px;
+  border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+thead {
+  background: #4f46e5;
+  color: #fff;
 }
 
 th, td {
-  padding: 10px;
   text-align: center;
-  border-bottom: 1px solid #ddd;
+  padding: 12px;
+  border-bottom: 1px solid #e5e7eb;
 }
 
-th {
-  background-color: #007bff;
-  color: white;
-  font-weight: bold;
+tbody tr:nth-child(even) {
+  background: #f9fafb;
 }
 
-tr:hover {
-  background-color: #f1f1f1;
-}
-
+/* Action buttons in table */
 .action-btn {
-  padding: 4px 8px;
-  margin: 0 2px;
+  padding: 6px 10px;
+  margin: 2px;
+  border-radius: 6px;
   border: none;
-  border-radius: 5px;
   cursor: pointer;
-  color: white;
-  font-size: 0.8rem;
+  font-weight: 600;
 }
 
-.edit-btn { background-color: #ffc107; }
-.delete-btn { background-color: #dc3545; }
+.edit-btn {
+  background: #fbbf24;
+  color: #fff;
+}
 
-@media (max-width: 600px) {
-  form {
+.edit-btn:hover {
+  background: #f59e0b;
+}
+
+.delete-btn {
+  background: #ef4444;
+  color: #fff;
+}
+
+.delete-btn:hover {
+  background: #dc2626;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  form#logForm {
     grid-template-columns: 1fr;
   }
 
-  form button {
-    grid-column: span 1;
+  table, th, td {
+    font-size: 0.9rem;
   }
 
-  th, td {
-    font-size: 0.8rem;
-    padding: 6px;
+  .action-buttons {
+    flex-direction: column;
+  }
+
+  .action-buttons button {
+    width: 100%;
   }
 }

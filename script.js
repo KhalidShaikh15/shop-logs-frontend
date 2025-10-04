@@ -9,7 +9,7 @@ function formatTime12h(timeStr) {
   return `${hour12}:${minute.toString().padStart(2, "0")} ${ampm}`;
 }
 
-// Fetch logs and populate table
+// Fetch logs and render table
 async function fetchLogs() {
   try {
     const res = await fetch(`${API_URL}/logs`);
@@ -56,11 +56,11 @@ document.getElementById("logForm").addEventListener("submit", async (e) => {
   const payload = { device, startTime, endTime, controllers, totalPayment, cash, online };
 
   try {
-    await fetch(`${API_URL}/logs/reset`, {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({ pin })
-});
+    await fetch(`${API_URL}/logs`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
 
     e.target.reset();
     fetchLogs();
@@ -69,7 +69,7 @@ document.getElementById("logForm").addEventListener("submit", async (e) => {
   }
 });
 
-// Delete log
+// Delete log with confirmation
 async function deleteLog(id) {
   if (!confirm("Are you sure you want to delete this log?")) return;
   try {
@@ -112,8 +112,8 @@ async function editLog(id) {
           })
         });
         form.reset();
-        fetchLogs();
         form.onsubmit = null;
+        fetchLogs();
       } catch (err) {
         console.error("Failed to update log:", err);
       }
@@ -123,31 +123,25 @@ async function editLog(id) {
   }
 }
 
-// Reset logs with PIN
+// Reset logs (admin PIN required)
 async function resetLogs() {
   const pin = prompt("Enter admin PIN to reset logs:");
-  if (pin !== "1526") { alert("Incorrect PIN!"); return; }
+  if (!pin) return;
   try {
-    const res = await fetch(`${API_URL}/logs/reset`, {
-      method: "DELETE",
+    await fetch(`${API_URL}/logs/reset`, {
+      method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ pin })
     });
-
-    if (!res.ok) {
-      const errData = await res.json();
-      alert(errData.error || "Reset failed");
-      return;
-    }
-
     fetchLogs();
     alert("Logs reset successfully!");
   } catch (err) {
     console.error("Failed to reset logs:", err);
+    alert("Failed to reset logs. Check PIN or server.");
   }
 }
 
-// WhatsApp message
+// Generate WhatsApp draft
 function generateWhatsAppMessage() {
   const rows = document.querySelectorAll("#logs tr");
   if (rows.length === 0) { alert("No logs to send"); return; }
@@ -174,5 +168,5 @@ function generateWhatsAppMessage() {
   window.open(whatsappUrl, "_blank");
 }
 
-// Load initial logs
+// Initial fetch
 fetchLogs();
