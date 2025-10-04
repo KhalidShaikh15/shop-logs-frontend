@@ -130,7 +130,7 @@ async function resetLogs() {
 
   try {
     const res = await fetch(`${API_URL}/logs/reset`, {
-      method: "DELETE", // must match backend
+      method: "POST", // must match backend
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ pin })
     });
