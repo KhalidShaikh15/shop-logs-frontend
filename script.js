@@ -1,6 +1,6 @@
-const API_URL = "https://shop-logs-backend-1.onrender.com/api"; // Your Render backend
+const API_URL = "https://shop-logs-backend-1.onrender.com/api"; // Update to your Render URL
 
-// Convert 24h to 12h AM/PM
+// Helper: Convert 24h to 12h AM/PM
 function formatTime12h(timeStr) {
   if (!timeStr) return "";
   const [hour, minute] = timeStr.split(":").map(Number);
@@ -9,7 +9,7 @@ function formatTime12h(timeStr) {
   return `${hour12}:${minute.toString().padStart(2, "0")} ${ampm}`;
 }
 
-// Fetch logs and render table
+// Fetch and display logs
 async function fetchLogs() {
   try {
     const res = await fetch(`${API_URL}/logs`);
@@ -69,7 +69,7 @@ document.getElementById("logForm").addEventListener("submit", async (e) => {
   }
 });
 
-// Delete log with confirmation
+// Delete log
 async function deleteLog(id) {
   if (!confirm("Are you sure you want to delete this log?")) return;
   try {
@@ -112,8 +112,8 @@ async function editLog(id) {
           })
         });
         form.reset();
-        form.onsubmit = null;
         fetchLogs();
+        form.onsubmit = null; // restore default
       } catch (err) {
         console.error("Failed to update log:", err);
       }
@@ -123,21 +123,28 @@ async function editLog(id) {
   }
 }
 
-// Reset logs (admin PIN required)
+// Reset logs
 async function resetLogs() {
   const pin = prompt("Enter admin PIN to reset logs:");
-  if (!pin) return;
+  if (pin !== "1526") { alert("Incorrect PIN!"); return; }
+
   try {
-    await fetch(`${API_URL}/logs/reset`, {
-      method: "POST",
+    const res = await fetch(`${API_URL}/logs/reset`, {
+      method: "DELETE", // must match backend
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ pin })
     });
-    fetchLogs();
-    alert("Logs reset successfully!");
+
+    const data = await res.json();
+
+    if (data.success) {
+      alert("Logs reset successfully!");
+      fetchLogs(); // refresh table
+    } else {
+      alert(data.error || "Failed to reset logs");
+    }
   } catch (err) {
     console.error("Failed to reset logs:", err);
-    alert("Failed to reset logs. Check PIN or server.");
   }
 }
 
