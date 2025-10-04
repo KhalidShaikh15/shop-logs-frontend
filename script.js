@@ -1,23 +1,32 @@
-const API_URL = "https://shop-logs-backend-1.onrender.com/api"; // Your backend URL
+const API_URL = "https://shop-logs-backend-1.onrender.com/api";
 
-// Convert 24h to 12h AM/PM
+// Helper: 24h → 12h AM/PM
 function formatTime12h(timeStr) {
   if (!timeStr) return "";
   const [hour, minute] = timeStr.split(":").map(Number);
   const ampm = hour >= 12 ? "PM" : "AM";
   const hour12 = hour % 12 || 12;
-  return `${hour12}:${minute.toString().padStart(2,"0")} ${ampm}`;
+  return `${hour12}:${minute.toString().padStart(2, "0")} ${ampm}`;
 }
 
 // Fetch logs (optionally by date)
-async function fetchLogs(date=null) {
+async function fetchLogs(date = null) {
   try {
-    const url = date ? `${API_URL}/logs?date=${date}` : `${API_URL}/logs`;
+    let url = `${API_URL}/logs`;
+    if (date) url = `${API_URL}/logs/by-date/${date}`;
+
     const res = await fetch(url);
     const data = await res.json();
+
     const logsList = document.getElementById("logs");
     logsList.innerHTML = "";
-    if (!Array.isArray(data)) return;
+
+    if (!Array.isArray(data) || data.length === 0) {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td colspan="8" style="text-align:center;">No logs found</td>`;
+      logsList.appendChild(tr);
+      return;
+    }
 
     data.forEach(log => {
       const tr = document.createElement("tr");
@@ -44,7 +53,6 @@ async function fetchLogs(date=null) {
 // Add or update log
 document.getElementById("logForm").addEventListener("submit", async (e) => {
   e.preventDefault();
-
   const device = document.getElementById("device").value;
   const startTime = document.getElementById("startTime").value;
   const endTime = document.getElementById("endTime").value;
@@ -122,7 +130,7 @@ async function editLog(id) {
   }
 }
 
-// Reset logs with PIN and archive
+// Reset logs (archive + delete) with PIN
 async function resetLogs() {
   const pin = prompt("Enter admin PIN to reset logs:");
   if (pin !== "1526") { alert("Incorrect PIN!"); return; }
@@ -133,24 +141,20 @@ async function resetLogs() {
       body: JSON.stringify({ pin })
     });
     const data = await res.json();
-    if (res.ok) {
-      alert(data.message || "Logs reset and archived successfully!");
-      fetchLogs();
-    } else {
-      alert(data.error || "Failed to reset logs");
-    }
+    if (data.success) alert("Logs archived and reset successfully!");
+    fetchLogs();
   } catch (err) {
-    console.error("Reset failed:", err);
+    console.error("Failed to reset logs:", err);
   }
 }
 
-// Generate WhatsApp message
+// WhatsApp message generation
 function generateWhatsAppMessage() {
   const rows = document.querySelectorAll("#logs tr");
   if (rows.length === 0) { alert("No logs to send"); return; }
 
   const today = new Date();
-  const dateStr = today.toLocaleDateString("en-GB", { day:"numeric", month:"long" });
+  const dateStr = today.toLocaleDateString("en-GB", { day: "numeric", month: "long" });
 
   let msg = `${dateStr}\n`;
 
@@ -171,17 +175,12 @@ function generateWhatsAppMessage() {
   window.open(whatsappUrl, "_blank");
 }
 
-// Fetch logs initially
-fetchLogs();
-
-function fetchLogsByDate() {
+// View logs by date
+function viewLogsByDate() {
   const dateInput = document.getElementById("logDate").value;
-  if (!dateInput) {
-    alert("Please select a date");
-    return;
-  }
-  fetchLogs(dateInput); // Calls existing fetchLogs with date parameter
+  if (!dateInput) return alert("Please select a date!");
+  fetchLogs(dateInput);
 }
 
-// Filter by date (if you want to add a date picker on frontend)
-// Example: fetchLogs("2025-10-04"); 
+// Initial fetch
+fetchLogs();

@@ -40,17 +40,18 @@
   <button type="submit">Add Entry</button>
 </form>
 
-<!-- Date picker for viewing logs of a specific day -->
-<div class="date-picker-container">
-  <label for="logDate">Select Date:</label>
-  <input type="date" id="logDate" />
-  <button onclick="fetchLogsByDate()" class="view-btn">View Logs</button>
-  <button onclick="fetchLogs()" class="view-btn">View All Logs</button>
-</div>
+<!-- Date picker and action buttons container -->
+<div class="top-controls">
+  <div class="date-picker">
+    <label for="logDate">Select Date:</label>
+    <input type="date" id="logDate" />
+    <button onclick="viewLogsByDate()" class="view-btn">View Logs</button>
+  </div>
 
-<div class="action-buttons">
-  <button onclick="resetLogs()" class="reset-btn">Reset Logs</button>
-  <button onclick="generateWhatsAppMessage()" class="whatsapp-btn">WhatsApp</button>
+  <div class="action-buttons">
+    <button onclick="resetLogs()" class="reset-btn">Reset Logs</button>
+    <button onclick="generateWhatsAppMessage()" class="whatsapp-btn">WhatsApp</button>
+  </div>
 </div>
 
 <table>

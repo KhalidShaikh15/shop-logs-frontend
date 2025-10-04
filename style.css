@@ -1,165 +1,178 @@
-/* General body */
 body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background: #f4f7f9;
-  color: #333;
-  margin: 0;
+  font-family: Arial, sans-serif;
   padding: 20px;
+  background: #f4f6f8;
+  color: #333;
 }
 
-/* Heading */
 h1 {
   text-align: center;
-  color: #1f2937;
   margin-bottom: 20px;
 }
 
-/* Form styling */
 form#logForm {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 15px;
-  max-width: 800px;
-  margin: 0 auto 20px;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 10px;
+  margin-bottom: 20px;
   background: #fff;
-  padding: 20px;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
 form#logForm label {
   display: block;
-  font-weight: 600;
   margin-bottom: 5px;
+  font-weight: bold;
 }
 
 form#logForm input,
 form#logForm select,
 form#logForm button {
-  padding: 10px;
-  font-size: 1rem;
-  border-radius: 6px;
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 10px;
+  border-radius: 5px;
   border: 1px solid #ccc;
 }
 
 form#logForm button {
-  grid-column: span 2;
-  background: #4f46e5;
-  color: #fff;
+  background: #007bff;
+  color: white;
   border: none;
   cursor: pointer;
-  transition: 0.3s;
+  font-weight: bold;
 }
 
 form#logForm button:hover {
-  background: #4338ca;
+  background: #0056b3;
 }
 
-/* Action buttons above table */
-.action-buttons {
+.top-controls {
   display: flex;
-  justify-content: center;
-  gap: 15px;
+  flex-wrap: wrap;
+  justify-content: space-between;
   margin-bottom: 20px;
+  gap: 10px;
 }
 
-.action-buttons button {
-  padding: 10px 20px;
-  border-radius: 6px;
-  border: none;
+.top-controls .date-picker {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.top-controls .date-picker input,
+.top-controls .date-picker button {
+  padding: 8px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+
+.top-controls .date-picker button {
+  background: #28a745;
+  color: white;
   cursor: pointer;
-  font-weight: 600;
-  transition: 0.3s;
+  border: none;
+  font-weight: bold;
+}
+
+.top-controls .date-picker button:hover {
+  background: #218838;
+}
+
+.top-controls .action-buttons button {
+  padding: 8px 15px;
+  margin-left: 5px;
+  border-radius: 5px;
+  border: none;
+  font-weight: bold;
+  cursor: pointer;
 }
 
 .reset-btn {
-  background: #ef4444;
-  color: #fff;
+  background: #dc3545;
+  color: white;
 }
 
 .reset-btn:hover {
-  background: #dc2626;
+  background: #c82333;
 }
 
 .whatsapp-btn {
-  background: #22c55e;
-  color: #fff;
+  background: #25d366;
+  color: white;
 }
 
 .whatsapp-btn:hover {
-  background: #16a34a;
+  background: #1ebe57;
 }
 
-/* Table styling */
 table {
   width: 100%;
   border-collapse: collapse;
-  max-width: 900px;
-  margin: 0 auto;
   background: #fff;
-  border-radius: 12px;
+  border-radius: 8px;
   overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
-thead {
-  background: #4f46e5;
-  color: #fff;
-}
-
-th, td {
+table th, table td {
+  padding: 10px;
   text-align: center;
-  padding: 12px;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid #eee;
 }
 
-tbody tr:nth-child(even) {
-  background: #f9fafb;
+table th {
+  background: #007bff;
+  color: white;
 }
 
-/* Action buttons in table */
+table tr:nth-child(even) {
+  background: #f9f9f9;
+}
+
 .action-btn {
-  padding: 6px 10px;
+  padding: 5px 10px;
   margin: 2px;
-  border-radius: 6px;
   border: none;
+  border-radius: 4px;
   cursor: pointer;
-  font-weight: 600;
+  font-weight: bold;
 }
 
 .edit-btn {
-  background: #fbbf24;
-  color: #fff;
+  background: #ffc107;
+  color: white;
 }
 
 .edit-btn:hover {
-  background: #f59e0b;
+  background: #e0a800;
 }
 
 .delete-btn {
-  background: #ef4444;
-  color: #fff;
+  background: #dc3545;
+  color: white;
 }
 
 .delete-btn:hover {
-  background: #dc2626;
+  background: #c82333;
 }
 
-/* Responsive */
+/* Mobile responsiveness */
 @media (max-width: 768px) {
+  .top-controls {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .top-controls .date-picker {
+    width: 100%;
+    justify-content: space-between;
+  }
+
   form#logForm {
     grid-template-columns: 1fr;
-  }
-
-  table, th, td {
-    font-size: 0.9rem;
-  }
-
-  .action-buttons {
-    flex-direction: column;
-  }
-
-  .action-buttons button {
-    width: 100%;
   }
 }
