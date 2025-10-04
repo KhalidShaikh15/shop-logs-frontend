@@ -2,54 +2,67 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Gaming Parlour Logs</title>
+  <title>Gaming Logs</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>🎮 Gaming Parlour Logs</h1>
 
-  <form id="logForm">
-    <select id="device" required>
-      <option value="">Select Device</option>
-      <option value="PS1">PS1</option>
-      <option value="PS2">PS2</option>
-      <option value="PS3">PS3</option>
-      <option value="PC1">PC1</option>
-    </select>
-    <input type="time" id="startTime" required>
-    <input type="time" id="endTime" required>
-    <input type="number" id="controllers" placeholder="Controllers" min="1" required>
-    <input type="number" id="totalPayment" placeholder="Total Payment" min="0" required>
-    <input type="number" id="cash" placeholder="Cash" min="0">
-    <input type="number" id="online" placeholder="Online" min="0">
-    <button type="submit">Add Log</button>
-  </form>
+<h1>🎮 Gaming Logs</h1>
 
-  <div class="controls">
-    <button id="resetBtn">Reset Logs</button>
-    <button id="whatsappBtn">Generate WhatsApp</button>
-  </div>
+<form id="logForm">
+  <label for="device">Device:</label>
+  <select id="device" required>
+    <option value="" disabled selected>Select Device</option>
+    <option value="PS1">PS1</option>
+    <option value="PS2">PS2</option>
+    <option value="PS3">PS3</option>
+    <option value="PC1">PC1</option>
+  </select>
 
-  <div class="gaming-log-grid">
-    <div class="device-column">
-      <h2>PS1</h2>
-      <ul id="PS1-logs"></ul>
-    </div>
-    <div class="device-column">
-      <h2>PS2</h2>
-      <ul id="PS2-logs"></ul>
-    </div>
-    <div class="device-column">
-      <h2>PS3</h2>
-      <ul id="PS3-logs"></ul>
-    </div>
-    <div class="device-column">
-      <h2>PC1</h2>
-      <ul id="PC1-logs"></ul>
-    </div>
-  </div>
+  <label for="startTime">Start Time:</label>
+  <input type="time" id="startTime" required />
 
-  <script src="script.js"></script>
+  <label for="endTime">End Time:</label>
+  <input type="time" id="endTime" required />
+
+  <label for="controllers">Controllers:</label>
+  <input type="number" id="controllers" placeholder="Number of controllers" required />
+
+  <label for="totalPayment">Total Payment:</label>
+  <input type="number" id="totalPayment" placeholder="Total payment" required />
+
+  <label for="cash">Cash:</label>
+  <input type="number" id="cash" placeholder="Cash amount" />
+
+  <label for="online">Online:</label>
+  <input type="number" id="online" placeholder="Online amount" />
+
+  <button type="submit">Add Entry</button>
+</form>
+
+<div class="action-buttons">
+  <button onclick="resetLogs()" class="reset-btn">Reset Logs</button>
+  <button onclick="generateWhatsAppMessage()" class="whatsapp-btn">WhatsApp</button>
+</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Device</th>
+      <th>Start Time</th>
+      <th>End Time</th>
+      <th>Controllers</th>
+      <th>Total Payment</th>
+      <th>Cash</th>
+      <th>Online</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody id="logs">
+    <!-- Logs will be dynamically inserted here -->
+  </tbody>
+</table>
+
+<script src="script.js"></script>
 </body>
 </html>
