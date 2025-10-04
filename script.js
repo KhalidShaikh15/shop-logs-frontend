@@ -1,14 +1,15 @@
 const API_URL = "https://shop-logs-backend-1.onrender.com/api"; // Your Render backend
 
-// Helper: Convert 24h to 12h AM/PM
+// Convert 24h to 12h AM/PM
 function formatTime12h(timeStr) {
+  if (!timeStr) return "";
   const [hour, minute] = timeStr.split(":").map(Number);
   const ampm = hour >= 12 ? "PM" : "AM";
   const hour12 = hour % 12 || 12;
   return `${hour12}:${minute.toString().padStart(2, "0")} ${ampm}`;
 }
 
-// Fetch and display logs
+// Fetch logs and populate table
 async function fetchLogs() {
   try {
     const res = await fetch(`${API_URL}/logs`);
@@ -68,7 +69,7 @@ document.getElementById("logForm").addEventListener("submit", async (e) => {
   }
 });
 
-// Delete log with confirmation
+// Delete log
 async function deleteLog(id) {
   if (!confirm("Are you sure you want to delete this log?")) return;
   try {
@@ -93,7 +94,6 @@ async function editLog(id) {
     document.getElementById("cash").value = log.cash || "";
     document.getElementById("online").value = log.online || "";
 
-    // Replace submit to update
     const form = document.getElementById("logForm");
     form.onsubmit = async (e) => {
       e.preventDefault();
@@ -113,7 +113,6 @@ async function editLog(id) {
         });
         form.reset();
         fetchLogs();
-        // Restore default submit behavior
         form.onsubmit = null;
       } catch (err) {
         console.error("Failed to update log:", err);
@@ -124,16 +123,23 @@ async function editLog(id) {
   }
 }
 
-// Reset logs (admin PIN required)
+// Reset logs with PIN
 async function resetLogs() {
   const pin = prompt("Enter admin PIN to reset logs:");
   if (pin !== "1526") { alert("Incorrect PIN!"); return; }
   try {
-    await fetch(`${API_URL}/reset-logs`, {
-      method: "POST",
+    const res = await fetch(`${API_URL}/logs/reset`, {
+      method: "DELETE",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ pin })
     });
+
+    if (!res.ok) {
+      const errData = await res.json();
+      alert(errData.error || "Reset failed");
+      return;
+    }
+
     fetchLogs();
     alert("Logs reset successfully!");
   } catch (err) {
@@ -141,7 +147,7 @@ async function resetLogs() {
   }
 }
 
-// Generate WhatsApp draft
+// WhatsApp message
 function generateWhatsAppMessage() {
   const rows = document.querySelectorAll("#logs tr");
   if (rows.length === 0) { alert("No logs to send"); return; }
@@ -168,5 +174,5 @@ function generateWhatsAppMessage() {
   window.open(whatsappUrl, "_blank");
 }
 
-// Initial fetch
+// Load initial logs
 fetchLogs();
