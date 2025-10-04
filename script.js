@@ -56,11 +56,11 @@ document.getElementById("logForm").addEventListener("submit", async (e) => {
   const payload = { device, startTime, endTime, controllers, totalPayment, cash, online };
 
   try {
-    await fetch(`${API_URL}/logs`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
+    await fetch(`${API_URL}/logs/reset`, {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ pin })
+});
 
     e.target.reset();
     fetchLogs();
