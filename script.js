@@ -1,4 +1,4 @@
-const API_URL = "https://shop-logs-backend-1.onrender.com/api/logs"; // Render backend URL
+const API_URL = "https://shop-logs-backend-1.onrender.com/api/logs";
 
 // Elements
 const logForm = document.getElementById("logForm");
@@ -22,6 +22,14 @@ async function fetchLogs() {
     data.forEach(log => {
       const li = document.createElement("li");
       li.textContent = `${log.player} scored ${log.score} (at ${new Date(log.createdAt).toLocaleString()})`;
+
+      // Edit button
+      const editBtn = document.createElement("button");
+      editBtn.textContent = "Edit";
+      editBtn.style.marginLeft = "10px";
+      editBtn.onclick = () => editLog(log);
+
+      li.appendChild(editBtn);
       logsList.appendChild(li);
     });
   } catch (err) {
@@ -33,7 +41,6 @@ async function fetchLogs() {
 // Add new log
 logForm.addEventListener("submit", async (e) => {
   e.preventDefault();
-
   const player = playerInput.value.trim();
   const score = Number(scoreInput.value);
 
@@ -62,6 +69,52 @@ logForm.addEventListener("submit", async (e) => {
     alert("Error adding log");
   }
 });
+
+// Edit a log
+async function editLog(log) {
+  const newPlayer = prompt("Enter new player name:", log.player);
+  const newScore = prompt("Enter new score:", log.score);
+
+  if (!newPlayer || isNaN(Number(newScore))) return;
+
+  try {
+    const res = await fetch(`${API_URL}/${log._id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ player: newPlayer, score: Number(newScore) })
+    });
+
+    const data = await res.json();
+    if (data.success) fetchLogs();
+    else alert("Failed to update log");
+  } catch (err) {
+    console.error("Edit log error:", err);
+    alert("Error editing log");
+  }
+}
+
+// Reset all logs
+async function resetLogs() {
+  if (!confirm("Are you sure you want to delete all logs?")) return;
+
+  try {
+    const res = await fetch(`${API_URL}/reset`, { method: "DELETE" });
+    const data = await res.json();
+    if (data.success) fetchLogs();
+    else alert("Failed to reset logs");
+  } catch (err) {
+    console.error("Reset logs error:", err);
+    alert("Error resetting logs");
+  }
+}
+
+// Optional: add a reset button dynamically
+const resetBtn = document.createElement("button");
+resetBtn.textContent = "Reset All Logs";
+resetBtn.style.display = "block";
+resetBtn.style.marginTop = "10px";
+resetBtn.onclick = resetLogs;
+document.body.insertBefore(resetBtn, logsList);
 
 // Initial fetch
 fetchLogs();
