@@ -1,4 +1,4 @@
-const API_URL = "https://shop-logs-backend-1.onrender.com/api"; // Update to your Render URL
+const API_URL = "https://shop-logs-backend-1.onrender.com/api"; // Your Render backend
 
 // Helper: Convert 24h to 12h AM/PM
 function formatTime12h(timeStr) {
@@ -9,33 +9,37 @@ function formatTime12h(timeStr) {
   return `${hour12}:${minute.toString().padStart(2, "0")} ${ampm}`;
 }
 
-// Fetch and display logs
+// Display logs in table
+function displayLogs(data) {
+  const logsList = document.getElementById("logs");
+  logsList.innerHTML = "";
+  if (!Array.isArray(data)) return;
+
+  data.forEach(log => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${log.device}</td>
+      <td>${formatTime12h(log.startTime)}</td>
+      <td>${formatTime12h(log.endTime)}</td>
+      <td>${log.controllers}</td>
+      <td>${log.totalPayment}</td>
+      <td>${log.cash || ""}</td>
+      <td>${log.online || ""}</td>
+      <td>
+        <button class="action-btn edit-btn" onclick='editLog("${log._id}")'>Edit</button>
+        <button class="action-btn delete-btn" onclick='deleteLog("${log._id}")'>Delete</button>
+      </td>
+    `;
+    logsList.appendChild(tr);
+  });
+}
+
+// Fetch logs
 async function fetchLogs() {
   try {
     const res = await fetch(`${API_URL}/logs`);
     const data = await res.json();
-    const logsList = document.getElementById("logs");
-    logsList.innerHTML = "";
-
-    if (!Array.isArray(data)) return;
-
-    data.forEach(log => {
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td>${log.device}</td>
-        <td>${formatTime12h(log.startTime)}</td>
-        <td>${formatTime12h(log.endTime)}</td>
-        <td>${log.controllers}</td>
-        <td>${log.totalPayment}</td>
-        <td>${log.cash || ""}</td>
-        <td>${log.online || ""}</td>
-        <td>
-          <button class="action-btn edit-btn" onclick='editLog("${log._id}")'>Edit</button>
-          <button class="action-btn delete-btn" onclick='deleteLog("${log._id}")'>Delete</button>
-        </td>
-      `;
-      logsList.appendChild(tr);
-    });
+    displayLogs(data);
   } catch (err) {
     console.error("Failed to fetch logs:", err);
   }
@@ -61,7 +65,6 @@ document.getElementById("logForm").addEventListener("submit", async (e) => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
     });
-
     e.target.reset();
     fetchLogs();
   } catch (err) {
@@ -113,7 +116,7 @@ async function editLog(id) {
         });
         form.reset();
         fetchLogs();
-        form.onsubmit = null; // restore default
+        form.onsubmit = null;
       } catch (err) {
         console.error("Failed to update log:", err);
       }
@@ -123,28 +126,33 @@ async function editLog(id) {
   }
 }
 
-// Reset logs
+// Reset logs (archive first, admin PIN)
 async function resetLogs() {
   const pin = prompt("Enter admin PIN to reset logs:");
   if (pin !== "1526") { alert("Incorrect PIN!"); return; }
-
   try {
-    const res = await fetch(`${API_URL}/logs/reset`, {
-      method: "POST", // must match backend
+    await fetch(`${API_URL}/logs/reset`, {
+      method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ pin })
     });
-
-    const data = await res.json();
-
-    if (data.success) {
-      alert("Logs reset successfully!");
-      fetchLogs(); // refresh table
-    } else {
-      alert(data.error || "Failed to reset logs");
-    }
+    fetchLogs();
+    alert("Logs reset and archived successfully!");
   } catch (err) {
     console.error("Failed to reset logs:", err);
+  }
+}
+
+// View archived logs by date
+async function viewArchivedLogs() {
+  const date = prompt("Enter date to view logs (YYYY-MM-DD):");
+  if (!date) return;
+  try {
+    const res = await fetch(`${API_URL}/archived-logs/${date}`);
+    const data = await res.json();
+    displayLogs(data);
+  } catch (err) {
+    console.error("Failed to fetch archived logs:", err);
   }
 }
 
@@ -155,7 +163,6 @@ function generateWhatsAppMessage() {
 
   const today = new Date();
   const dateStr = today.toLocaleDateString("en-GB", { day: "numeric", month: "long" });
-
   let msg = `${dateStr}\n`;
 
   rows.forEach(row => {
