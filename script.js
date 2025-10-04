@@ -1,122 +1,132 @@
-const API_URL = "https://shop-logs-backend-1.onrender.com/api/logs"; // Replace with your Render backend
+const API_URL = "https://shop-logs-backend-1.onrender.com/api/logs";
+const RESET_URL = "https://shop-logs-backend-1.onrender.com/api/reset-logs";
+const ADMIN_PIN = "1526"; // ✅ Change admin PIN here if needed
 
-function formatTime(timeStr) {
-  let [hours, minutes] = timeStr.split(":").map(Number);
-  const ampm = hours >= 12 ? "PM" : "AM";
-  hours = hours % 12 || 12;
-  return `${hours}:${minutes.toString().padStart(2, "0")} ${ampm}`;
-}
+const logForm = document.getElementById("logForm");
+const logsContainer = document.getElementById("logs");
 
+// Fetch logs
 async function fetchLogs() {
   try {
     const res = await fetch(API_URL);
     const data = await res.json();
-
-    ["PS1","PS2","PS3","PC1"].forEach(device => {
-      document.getElementById(`${device}-logs`).innerHTML = "";
-    });
+    logsContainer.innerHTML = "";
 
     if (!Array.isArray(data)) return;
 
     data.forEach(log => {
       const li = document.createElement("li");
       li.innerHTML = `
-        <strong>Total: ${log.totalPayment}</strong><br>
-        Start: ${formatTime(log.startTime)}<br>
-        End: ${formatTime(log.endTime)}<br>
-        Controllers: ${log.controllers}<br>
-        Cash: ${log.cash || ""}<br>
-        Online: ${log.online || ""}
-        <div class="actions">
-          <button class="edit">Edit</button>
-          <button class="delete">Delete</button>
-        </div>
+        <strong>${log.device}</strong> 
+        | ${formatTime(log.startTime)} - ${formatTime(log.endTime)} 
+        | Controllers: ${log.controllers} 
+        | Total: ${log.totalPayment} | Cash: ${log.cash || 0} | Online: ${log.online || 0}
+        <button onclick="editLog('${log._id}')">Edit</button>
+        <button onclick="deleteLog('${log._id}')">Delete</button>
       `;
-
-      // Edit button (UI only, functionality will call backend later)
-      li.querySelector(".edit").addEventListener("click", () => {
-        const newStart = prompt("Edit Start Time (HH:MM)", log.startTime);
-        const newEnd = prompt("Edit End Time (HH:MM)", log.endTime);
-        const newControllers = prompt("Edit Controllers", log.controllers);
-        const newTotal = prompt("Edit Total Payment", log.totalPayment);
-        const newCash = prompt("Edit Cash", log.cash);
-        const newOnline = prompt("Edit Online", log.online);
-
-        // For now, we update UI only, backend PUT will be implemented later
-        log.startTime = newStart || log.startTime;
-        log.endTime = newEnd || log.endTime;
-        log.controllers = newControllers || log.controllers;
-        log.totalPayment = newTotal || log.totalPayment;
-        log.cash = newCash || log.cash;
-        log.online = newOnline || log.online;
-        fetchLogs();
-      });
-
-      // Delete button (UI only, backend DELETE later)
-      li.querySelector(".delete").addEventListener("click", () => {
-        if (confirm("Are you sure you want to delete this log?")) {
-          // Backend call to delete will be implemented later
-          li.remove();
-        }
-      });
-
-      const ul = document.getElementById(`${log.device}-logs`);
-      if (ul) ul.appendChild(li);
+      logsContainer.appendChild(li);
     });
-
   } catch (err) {
-    console.error("Failed to fetch logs:", err);
+    console.error(err);
   }
 }
 
-document.getElementById("logForm").addEventListener("submit", async (e) => {
+// Add log
+logForm.addEventListener("submit", async e => {
   e.preventDefault();
-  const log = {
-    device: document.getElementById("device").value,
-    startTime: document.getElementById("startTime").value,
-    endTime: document.getElementById("endTime").value,
-    controllers: Number(document.getElementById("controllers").value),
-    totalPayment: Number(document.getElementById("totalPayment").value),
-    cash: Number(document.getElementById("cash").value) || 0,
-    online: Number(document.getElementById("online").value) || 0
-  };
+  const device = document.getElementById("device").value;
+  const startTime = document.getElementById("startTime").value;
+  const endTime = document.getElementById("endTime").value;
+  const controllers = document.getElementById("controllers").value;
+  const totalPayment = document.getElementById("totalPayment").value;
+  const cash = document.getElementById("cash").value;
+  const online = document.getElementById("online").value;
 
-  try {
-    await fetch(API_URL, {
-      method: "POST",
-      headers: {"Content-Type": "application/json"},
-      body: JSON.stringify(log)
-    });
-    document.getElementById("logForm").reset();
-    fetchLogs();
-  } catch (err) {
-    console.error("Failed to add log:", err);
-  }
-});
-
-// Reset button
-document.getElementById("resetBtn").addEventListener("click", () => {
-  const pin = prompt("Enter admin PIN to reset logs");
-  if (pin) {
-    alert("Backend reset not implemented yet"); // placeholder
-  }
-});
-
-// WhatsApp Button
-document.getElementById("whatsappBtn").addEventListener("click", () => {
-  const rows = [];
-  ["PS1","PS2","PS3","PC1"].forEach(device => {
-    const logs = document.getElementById(`${device}-logs`).children;
-    for (let li of logs) {
-      const text = li.textContent.replace(/\n/g, " ").replace("Total: ", "");
-      rows.push(`${device} ${text}`);
-    }
+  await fetch(API_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ device, startTime, endTime, controllers, totalPayment, cash, online })
   });
-  const today = new Date();
-  const dateStr = today.toLocaleDateString("en-GB", { day: "numeric", month: "long" });
-  const message = `${dateStr}\n${rows.join("\n")}`;
+
+  logForm.reset();
+  fetchLogs();
+});
+
+// Delete log
+async function deleteLog(id) {
+  if (!confirm("Are you sure you want to delete this log?")) return;
+
+  await fetch(`${API_URL}/${id}`, { method: "DELETE" });
+  fetchLogs();
+}
+
+// Edit log
+async function editLog(id) {
+  const newDevice = prompt("Device name:");
+  const newStart = prompt("Start time (hh:mm AM/PM):");
+  const newEnd = prompt("End time (hh:mm AM/PM):");
+  const newControllers = prompt("Number of controllers:");
+  const newTotal = prompt("Total payment:");
+  const newCash = prompt("Cash amount:");
+  const newOnline = prompt("Online amount:");
+
+  if (!newDevice || !newStart || !newEnd) return;
+
+  await fetch(`${API_URL}/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      device: newDevice,
+      startTime: newStart,
+      endTime: newEnd,
+      controllers: newControllers,
+      totalPayment: newTotal,
+      cash: newCash,
+      online: newOnline
+    })
+  });
+
+  fetchLogs();
+}
+
+// Reset logs
+async function resetLogs() {
+  const pin = prompt("Enter admin PIN to reset logs:");
+  if (pin !== ADMIN_PIN) return alert("Incorrect PIN");
+
+  await fetch(RESET_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ pin })
+  });
+
+  fetchLogs();
+}
+
+// Generate WhatsApp message
+function generateWhatsAppMessage() {
+  let message = "";
+  const logs = logsContainer.querySelectorAll("li");
+  const today = new Date().toLocaleDateString("en-US", { day: "numeric", month: "long" });
+  message += `${today}\n`;
+
+  logs.forEach(log => {
+    const text = log.textContent;
+    const parts = text.split("|").map(p => p.trim());
+    message += `${parts[0]} ${parts[1]} -${parts[2].split(":")[1]}- ${parts[3]}(${parts[4]},${parts[5]})\n`;
+  });
+
   const url = `https://wa.me/?text=${encodeURIComponent(message)}`;
   window.open(url, "_blank");
-});
+}
 
+// Utility function to format 12-hour time
+function formatTime(timeStr) {
+  const [hours, minutes] = timeStr.split(":").map(Number);
+  const date = new Date();
+  date.setHours(hours, minutes);
+  return date.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true });
+}
+
+// Initial fetch
 fetchLogs();
