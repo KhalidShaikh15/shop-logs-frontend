@@ -1,53 +1,55 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Gaming Logs</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gaming Parlour Logs</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>🎮 Gaming Logs</h1>
+  <h1>🎮 Gaming Parlour Logs</h1>
 
   <form id="logForm">
-    <input type="text" id="player" placeholder="Player Name" required />
-    <input type="number" id="score" placeholder="Score" required />
+    <select id="device" required>
+      <option value="">Select Device</option>
+      <option value="PS1">PS1</option>
+      <option value="PS2">PS2</option>
+      <option value="PS3">PS3</option>
+      <option value="PC1">PC1</option>
+    </select>
+    <input type="time" id="startTime" required>
+    <input type="time" id="endTime" required>
+    <input type="number" id="controllers" placeholder="Controllers" min="1" required>
+    <input type="number" id="totalPayment" placeholder="Total Payment" min="0" required>
+    <input type="number" id="cash" placeholder="Cash" min="0">
+    <input type="number" id="online" placeholder="Online" min="0">
     <button type="submit">Add Log</button>
   </form>
 
-  <h2>Logs</h2>
-  <ul id="logs"></ul>
+  <div class="controls">
+    <button id="resetBtn">Reset Logs</button>
+    <button id="whatsappBtn">Generate WhatsApp</button>
+  </div>
 
-  <script>
-    const API_URL = "https://shop-logs-backend-1.onrender.com/api/logs"; // update with your Render backend URL
+  <div class="gaming-log-grid">
+    <div class="device-column">
+      <h2>PS1</h2>
+      <ul id="PS1-logs"></ul>
+    </div>
+    <div class="device-column">
+      <h2>PS2</h2>
+      <ul id="PS2-logs"></ul>
+    </div>
+    <div class="device-column">
+      <h2>PS3</h2>
+      <ul id="PS3-logs"></ul>
+    </div>
+    <div class="device-column">
+      <h2>PC1</h2>
+      <ul id="PC1-logs"></ul>
+    </div>
+  </div>
 
-    async function fetchLogs() {
-      const res = await fetch(API_URL);
-      const data = await res.json();
-      const logsList = document.getElementById("logs");
-      logsList.innerHTML = "";
-      data.forEach(log => {
-        const li = document.createElement("li");
-        li.textContent = `${log.player} scored ${log.score} (at ${new Date(log.createdAt).toLocaleString()})`;
-        logsList.appendChild(li);
-      });
-    }
-
-    document.getElementById("logForm").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const player = document.getElementById("player").value;
-      const score = document.getElementById("score").value;
-
-      await fetch(API_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ player, score })
-      });
-
-      document.getElementById("player").value = "";
-      document.getElementById("score").value = "";
-      fetchLogs();
-    });
-
-    fetchLogs();
-  </script>
+  <script src="script.js"></script>
 </body>
 </html>
